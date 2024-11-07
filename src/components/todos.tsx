@@ -1,41 +1,36 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { FilePenLine, Trash } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import Link from 'next/link';
 
-export type Todo = {
-	id: string;
-	title: string;
-	completed: boolean;
-	description?: string;
-};
-
-const mockTodos: Todo[] = [
-	{
-		id: '1',
-		title: 'Todo 1',
-		completed: false,
-	},
-	{
-		id: '2',
-		title: 'Todo 2',
-		completed: false,
-	},
-	{
-		id: '3',
-		title: 'Todo 3',
-		completed: false,
-	},
-];
+import { Todo } from '@/types';
 
 export function TodoList() {
 	const [newTodo, setNewTodo] = useState('');
-	const [todos, setTodos] = useState<Todo[]>(mockTodos);
+	const [todos, setTodos] = useState<Todo[]>([]);
+
+	useQuery({
+		queryKey: ['todos'],
+		queryFn: async () => {
+			try {
+				const res = await fetch('/api/todos');
+				const { data } = (await res.json()) as { data: Todo[] };
+
+				if (data?.length) {
+					setTodos(data);
+				}
+			} catch (e) {
+				console.error('Error fetching todos: ', e);
+			}
+		},
+	});
 
 	const addTodo = (todo: Todo) => {
 		setTodos([...todos, todo]);
@@ -69,31 +64,46 @@ export function TodoList() {
 	};
 
 	return (
-		<div>
-			<form onSubmit={submit}>
-				<Label className="flex flex-row gap-2">
-					<Input
-						value={newTodo}
-						onChange={(e) => setNewTodo(e.target.value)}
-						placeholder="What needs to be done?"
-					/>
-				</Label>
-				<Button type="submit">Add Todo</Button>
+		<div className="flex flex-col gap-2">
+			<form onSubmit={submit} className="flex flex-row gap-2">
+				<Input
+					value={newTodo}
+					onChange={(e) => setNewTodo(e.target.value)}
+					placeholder="What needs to be done?"
+				/>
+
+				<Button disabled={!newTodo} type="submit">
+					Add Todo
+				</Button>
 			</form>
-			<ul>
+			<ul className="flex flex-col gap-2">
 				{todos.map((todo) => (
-					<li key={todo.id}>
-						<Label>
+					<li
+						key={todo.id}
+						className="flex flex-row items-center justify-between gap-2">
+						<Label className="truncate flex flex-row items-center gap-2">
 							<Checkbox
 								checked={todo.completed}
 								onClick={() => toggleTodo(todo.id)}
 							/>
-							<span>{todo.title}</span>
-							<Link href={`/todos/${todo.id}`}>Edit</Link>
-							<Button onClick={() => removeTodo(todo.id)}>
-								Delete
-							</Button>
+							<span
+								className={
+									todo.completed ? 'line-through' : 'truncate'
+								}>
+								{todo.title}
+							</span>
 						</Label>
+						<span className="flex flex-row items-center gap-2">
+							<Link href={`/todos/${todo.id}`}>
+								<FilePenLine />
+							</Link>
+							<Button
+								size="icon"
+								variant="destructive"
+								onClick={() => removeTodo(todo.id)}>
+								<Trash />
+							</Button>
+						</span>
 					</li>
 				))}
 			</ul>

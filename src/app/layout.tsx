@@ -1,8 +1,9 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import ReactQueryProvider from '@/app/context/react-query';
 import './globals.css';
-import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,19 +23,21 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body className={inter.className}>
-				<header>
-					<nav>
-						{navigation.map((item) => (
-							<Link key={item.name} href={item.href}>
-								{item.name}
-							</Link>
-						))}
-					</nav>
-				</header>
-				<main>{children}</main>
-			</body>
-		</html>
+		<ReactQueryProvider>
+			<html lang="en">
+				<body className={inter.className}>
+					<header>
+						<nav>
+							{navigation.map((item) => (
+								<Link key={item.name} href={item.href}>
+									{item.name}
+								</Link>
+							))}
+						</nav>
+					</header>
+					<main className="px-4">{children}</main>
+				</body>
+			</html>
+		</ReactQueryProvider>
 	);
 }

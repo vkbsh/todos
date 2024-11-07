@@ -7,3 +7,7 @@ pages_build_output_dir = ".vercel/output/static"
 [placement]
 mode = "smart"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "todo-list"
+database_id = "499988fd-d370-4671-9cd9-da5a69402f9e"

@@ -1,5 +1,3 @@
-import { TodoList } from '@/components/todos';
-
-export default function Home() {
+export default async function Home() {
 	return <div>Home</div>;
 }

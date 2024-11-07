@@ -1,0 +1,6 @@
+{
+	"out": "migrations",
+	"dialect": "sqlite",
+	"driver": "d1-http",
+	"schema": "src/lib/drizzle/schema.ts"
+}

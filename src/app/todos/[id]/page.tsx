@@ -1,4 +1,5 @@
-import { Todo, EditTodo } from '@/components/todos';
+import { EditTodo } from '@/components/todos';
+import { Todo } from '@/types';
 
 const getTodoById = (id: string): Todo => {
 	return {
