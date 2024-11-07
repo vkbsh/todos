@@ -2,6 +2,8 @@ import { drizzle } from 'drizzle-orm/d1';
 import { NextRequest } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
+import { todos } from '@/lib/drizzle/schema';
+
 import { Todo } from '@/types';
 
 export const runtime = 'edge';
@@ -27,14 +29,18 @@ const mockData: Todo[] = [
 export async function GET(request: NextRequest) {
 	const id = request.nextUrl.searchParams.get('id');
 
-	// const d1 = getRequestContext().env.DB;
-	// const db = drizzle(d1);
+	const d1 = getRequestContext().env.DB;
+	const db = drizzle(d1);
 
 	if (id) {
 		return Response.json({
 			data: mockData.find((todo) => todo.id === id),
 		});
 	}
+
+	const all = await db.select().from(todos).all();
+
+	console.log('all: ', all);
 
 	return Response.json({
 		data: mockData,
