@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 
 import { Todo } from '@/types';
 
@@ -51,7 +52,7 @@ export function TodoList() {
 		);
 	};
 
-	const submit = (e: React.FormEvent<HTMLFormElement>) => {
+	const submitAddTodo = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		addTodo({
@@ -65,7 +66,7 @@ export function TodoList() {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<form onSubmit={submit} className="flex flex-row gap-2">
+			<form onSubmit={submitAddTodo} className="flex flex-row gap-2">
 				<Input
 					value={newTodo}
 					onChange={(e) => setNewTodo(e.target.value)}
@@ -111,13 +112,66 @@ export function TodoList() {
 	);
 }
 
-export function EditTodo({ todo }: { todo: Todo }) {
+export function EditTodo({ id }: { id: string }) {
+	const [todo, setTodo] = useState<Todo | null>(null);
+
+	useQuery({
+		queryKey: ['todo', id],
+		queryFn: async () => {
+			try {
+				const res = await fetch('/api/todos?id=' + id);
+				const { data } = (await res.json()) as { data: Todo };
+
+				if (data) {
+					setTodo(data);
+				}
+			} catch (e) {
+				console.error('Error fetching todo: ', id, e);
+			}
+		},
+	});
+
+	const submitUpdateTodo = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		if (!todo) {
+			return;
+		}
+
+		console.log(todo);
+
+		// TODO: add mutation to update todo
+
+		// 	setTodo(data);
+	};
+
+	const deleteTodo = () => {
+		// TODO: add mutation to delete todo
+		console.log('delete todo', todo?.id);
+	};
+
 	return (
-		<div>
-			<Label>
-				<span>Completed</span>
-				<Checkbox />
+		<form onSubmit={submitUpdateTodo} className="flex flex-col gap-2">
+			<Label className="flex flex-col gap-2">
+				<span>Title</span>
+				<Input value={todo?.title} />
 			</Label>
-		</div>
+			<Label className="flex flex-col gap-2">
+				<span>Description</span>
+				<Textarea value={todo?.description} />
+			</Label>
+			<Label className="flex flex-row gap-2">
+				<span>Completed</span>
+				<Checkbox checked={todo?.completed} />
+			</Label>
+			<Label className="flex flex-row gap-2">
+				<Button type="submit" disabled>
+					Save
+				</Button>
+				<Button variant="destructive" disabled onClick={deleteTodo}>
+					Delete
+				</Button>
+			</Label>
+		</form>
 	);
 }

@@ -26,8 +26,8 @@ export default function RootLayout({
 		<ReactQueryProvider>
 			<html lang="en">
 				<body className={inter.className}>
-					<header>
-						<nav>
+					<header className="flex p-4">
+						<nav className="flex flex-row gap-2 underline">
 							{navigation.map((item) => (
 								<Link key={item.name} href={item.href}>
 									{item.name}
@@ -35,7 +35,7 @@ export default function RootLayout({
 							))}
 						</nav>
 					</header>
-					<main className="px-4">{children}</main>
+					<main className="flex flex-col gap-2 p-4">{children}</main>
 				</body>
 			</html>
 		</ReactQueryProvider>
