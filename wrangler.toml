@@ -9,5 +9,9 @@ mode = "smart"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "todo-list"
-database_id = "499988fd-d370-4671-9cd9-da5a69402f9e"
+database_name = ""
+database_id = ""
+
+[[vars]]
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=""
+CLERK_SECRET_KEY=""

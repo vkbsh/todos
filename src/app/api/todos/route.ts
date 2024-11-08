@@ -1,95 +1,125 @@
+import { cookies } from 'next/headers';
+import { eq, desc } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { NextRequest } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
-import { todos } from '@/lib/drizzle/schema';
-
-import { Todo } from '@/types';
+import { todos, Todo } from '@/lib/drizzle/schema';
 
 export const runtime = 'edge';
 
-const mockData: Todo[] = [
-	{
-		id: '1',
-		title: 'Todo 1',
-		completed: false,
-	},
-	{
-		id: '2',
-		title: 'Todo 2',
-		completed: false,
-	},
-	{
-		id: '3',
-		title: 'Todo 3',
-		completed: false,
-	},
-];
+const getQueryId = (request: NextRequest): string | null =>
+	request.nextUrl.searchParams.get('id');
+
+const getDB = () => {
+	const d1 = getRequestContext().env.DB;
+	return drizzle(d1);
+};
 
 export async function GET(request: NextRequest) {
-	const id = request.nextUrl.searchParams.get('id');
-
-	const d1 = getRequestContext().env.DB;
-	const db = drizzle(d1);
+	const db = getDB();
+	const rawId = getQueryId(request) as string;
+	const id = parseInt(rawId);
+	const { userId } = await auth();
 
 	if (id) {
-		return Response.json({
-			data: mockData.find((todo) => todo.id === id),
-		});
+		try {
+			const todo = await db.select().from(todos).where(eq(todos.id, id));
+
+			return Response.json({
+				data: todo[0],
+			});
+		} catch (e) {
+			// @ts-ignore
+			return Response.json({ error: e.message }, { status: 400 });
+		}
 	}
 
-	const all = await db.select().from(todos).all();
+	try {
+		const todoList = await db
+			.select()
+			.from(todos)
+			.orderBy(desc(todos.createdAt))
+			.where(eq(todos.userId, userId as string))
+			.all();
 
-	console.log('all: ', all);
-
-	return Response.json({
-		data: mockData,
-	});
+		return Response.json({
+			data: todoList,
+		});
+	} catch (e) {
+		// @ts-ignore
+		return Response.json({ error: e.message }, { status: 400 });
+	}
 }
 
 export async function POST(request: NextRequest) {
-	const body = await request.json();
+	const db = getDB();
+	const body: Todo = await request.json();
 
-	console.log('body: ', body);
+	try {
+		const todo = await db
+			.insert(todos)
+			.values({
+				title: body.title,
+				userId: body.userId,
+			})
+			.returning();
 
-	// TODO: validate body
-
-	// const d1 = getRequestContext().env.DB;
-	// const db = drizzle(d1);
-
-	return Response.json({
-		data: body,
-	});
+		return Response.json({
+			data: todo[0],
+		});
+	} catch (e) {
+		// @ts-ignore
+		return Response.json({ error: e.message }, { status: 400 });
+	}
 }
 
 export async function PUT(request: NextRequest) {
-	const body = await request.json();
+	const db = getDB();
+	const rawId = getQueryId(request) as string;
+	const id = parseInt(rawId);
+	const body: Todo = await request.json();
 
-	console.log('body: ', body);
+	if (!id) {
+		return new Response('id is required', { status: 400 });
+	}
 
-	// TODO: validate body
+	try {
+		const todo = await db
+			.update(todos)
+			.set({
+				id: body.id,
+				title: body.title,
+				description: body.description,
+				completed: body.completed,
+			})
+			// TODO: userId from headers
+			.where(eq(todos.id, body.id))
+			.returning();
 
-	// const d1 = getRequestContext().env.DB;
-	// const db = drizzle(d1);
-
-	return Response.json({
-		data: body,
-	});
+		return Response.json({
+			data: todo[0],
+		});
+	} catch (error) {
+		return Response.json({ error }, { status: 400 });
+	}
 }
 
 export async function DELETE(request: NextRequest) {
-	const id = request.nextUrl.searchParams.get('id');
-
-	// const d1 = getRequestContext().env.DB;
-	// const db = drizzle(d1);
+	const db = getDB();
+	const rawId = getQueryId(request) as string;
+	const id = parseInt(rawId);
 
 	if (!id) {
-		return Response.json({
-			error: 'No id provided',
-		});
+		return new Response('id is required', { status: 400 });
 	}
 
-	return Response.json({
-		data: 'Todo with id ' + id + ' deleted',
-	});
+	const deletedTodo = await db
+		.delete(todos)
+		// TODO: userId from headers
+		.where(eq(todos.id, id))
+		.returning();
+
+	return Response.json({ data: deletedTodo });
 }

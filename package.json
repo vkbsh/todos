@@ -12,11 +12,13 @@
 		"deploy": "npm run pages:build && wrangler pages deploy",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
 		"drizzle:gen": "drizzle-kit generate",
-		"drizzle:up": "drizzle-kit up",
-		"d1:migrations": "wrangler d1 migrations apply todo-list"
+		"drizzle:up": "drizzle-kit up"
 	},
 	"dependencies": {
+		"@clerk/nextjs": "^6.2.1",
+		"@radix-ui/react-avatar": "^1.1.1",
 		"@radix-ui/react-checkbox": "^1.1.2",
+		"@radix-ui/react-dropdown-menu": "^2.1.2",
 		"@radix-ui/react-label": "^2.1.0",
 		"@radix-ui/react-slot": "^1.1.0",
 		"@radix-ui/react-toast": "^1.2.2",
@@ -25,12 +27,15 @@
 		"clsx": "^2.1.1",
 		"drizzle-kit": "^0.28.0",
 		"drizzle-orm": "^0.36.1",
+		"drizzle-zod": "^0.5.1",
+		"framer-motion": "^11.11.11",
 		"lucide-react": "^0.454.0",
 		"next": "14.2.5",
 		"react": "^18",
 		"react-dom": "^18",
 		"tailwind-merge": "^2.5.4",
-		"tailwindcss-animate": "^1.0.7"
+		"tailwindcss-animate": "^1.0.7",
+		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@cloudflare/next-on-pages": "^1.13.5",
